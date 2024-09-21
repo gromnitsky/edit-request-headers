@@ -43,4 +43,62 @@ suite('rules', function() {
             }
         ])
     })
+
+    test('priority key ignored', function() {
+        let r = rules({
+            '||127.0.0.1/': {
+                '.priority': '1',
+                'omg': 'lol'
+            }
+        })
+        assert.deepEqual(r, [
+            {
+                "id" : 0,
+                "action" : {
+                    "type": "modifyHeaders",
+                    "requestHeaders": [
+                        {
+                            "header": "omg",
+                            "operation": "set",
+                            "value": "lol"
+                        },
+                    ]
+                },
+                "condition" : {
+                    "urlFilter" : "||127.0.0.1/",
+                    "resourceTypes" : ["main_frame", "sub_frame"]
+                }
+            }
+        ])
+    })
+
+    test('priority key included', function() {
+        let r = rules({
+            '||127.0.0.1/': {
+                '.priority': '2',
+                'omg': 'lol'
+            }
+        })
+        assert.deepEqual(r, [
+            {
+                "id" : 0,
+                "priority": 2,
+                "action" : {
+                    "type": "modifyHeaders",
+                    "requestHeaders": [
+                        {
+                            "header": "omg",
+                            "operation": "set",
+                            "value": "lol"
+                        },
+                    ]
+                },
+                "condition" : {
+                    "urlFilter" : "||127.0.0.1/",
+                    "resourceTypes" : ["main_frame", "sub_frame"]
+                }
+            }
+        ])
+    })
+
 })

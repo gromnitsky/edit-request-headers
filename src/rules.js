@@ -19,7 +19,7 @@ function rule(key, val, id) {
 
     for (let [k, v] of Object.entries(val)) {
         if ('.priority' === k) {
-            let n = parseInt(k)
+            let n = parseInt(v, 10)
             if (n > 1) r.priority = n
             continue
         }
