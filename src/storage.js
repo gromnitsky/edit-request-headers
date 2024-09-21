@@ -15,11 +15,11 @@ export class Storage {
         if (!key) throw new Error('key is required')
         return this.area.get(key).then( v => {
             return v[key] || `# Switch Google Search to a 'lightweight' mode.
-# Other subdomains like www.google.com are also affected by this rule
+# Its subdomains like www.google.com are also affected by this rule.
 #[google.com]
 #user-agent = omglol/1.2.3
 
-# add 'omg' header, set 'referer' & remove 'user-agent'
+# Add 'omg' header, change 'referer', & remove 'user-agent'.
 [127.0.0.1:80]
 omg = lol
 referer = http://example.com/
@@ -47,5 +47,36 @@ export function ini_parse(str) {
         this.emit('fileParse')
     }
     parser.load(str || '')
-    return parser.getBlock()
+    let r = {}
+    for (let [k, v] of Object.entries(parser.getBlock())) {
+        r[domain(k)] = keypairs(v)
+    }
+    return r
+}
+
+function domain(str = '') {
+    let protocol = ''
+    if (!/^[a-z]+:/i.test(str)) {
+        protocol = 'http://'
+        str = [protocol, str].join`/`
+    }
+    let url
+    try {
+        url = new URL(str)
+    } catch (_) {
+        throw new Error(`invalid url: ${str.slice(0, 50)}`)
+    }
+    let pathname = `${url.pathname}/`.replace(/\/+/g, '/')
+    return [protocol ? '||' : '|', protocol ? '' : `${url.protocol}//`,
+            url.host, pathname].join``
+}
+
+function keypairs(obj) {
+    let r = {}
+    for (let [k, v] of Object.entries(obj)) {
+        if ( !/^[a-z_-]+$/i.test(k))
+            throw new Error(`invalid header name: ${k.slice(0, 20)}`)
+        r[k.toLowerCase()] = v
+    }
+    return r
 }

@@ -1,4 +1,4 @@
-{
+function(browser="chrome") {
     "manifest_version": 3,
     "name": "Edit Request Headers",
     "version": "0.0.1",

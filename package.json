@@ -3,6 +3,8 @@
     "dependencies": {
         "@esbuild-plugins/node-modules-polyfill": "^0.2.2",
         "esbuild": "^0.23.1",
-        "inireader": "^2.2.1"
+        "inireader": "^2.2.1",
+        "mocha": "^10.7.3",
+        "plain-dialogs": "^0.1.1"
     }
 }
