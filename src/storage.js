@@ -74,7 +74,7 @@ function domain(str = '') {
 function keypairs(obj) {
     let r = {}
     for (let [k, v] of Object.entries(obj)) {
-        if ( !/^[a-z_-]+$/i.test(k))
+        if ( !/^\.?[a-z_-]+$/i.test(k))
             throw new Error(`invalid header name: ${k.slice(0, 20)}`)
         r[k.toLowerCase()] = v
     }

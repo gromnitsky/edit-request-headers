@@ -27,5 +27,16 @@ suite('ini', function() {
 
     test('invalid keypair', function() {
         assert.throws( () => { storage.ini_parse('[q]\nw w = 1') })
+        assert.throws( () => { storage.ini_parse('[q]\nw.=1') })
+    })
+
+    test('valid keypair', function() {
+        let r = storage.ini_parse('[example.com:80]\nq=1\n.w=2')
+        assert.deepEqual(r, {
+            "||example.com/": {
+                ".w": "2",
+                "q": "1"
+            }
+        })
     })
 })
