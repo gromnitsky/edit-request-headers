@@ -48,8 +48,8 @@ export function ini_parse(str) {
     }
     parser.load(str || '')
     let r = {}
-    for (let [k, v] of Object.entries(parser.getBlock())) {
-        r[domain(k)] = keypairs(v)
+    for (let [url_condition, v] of Object.entries(parser.getBlock())) {
+        r[domain(url_condition)] = keypairs(url_condition, v)
     }
     return r
 }
@@ -71,11 +71,16 @@ function domain(str = '') {
             url.host, pathname].join``
 }
 
-function keypairs(obj) {
+function keypairs(url_condition, obj) {
+    if (!Object.keys(obj).length)
+        throw new Error(`empty section for ${url_condition.slice(0, 20)}`)
     let r = {}
     for (let [k, v] of Object.entries(obj)) {
         if ( !/^\.?[a-z_-]+$/i.test(k))
             throw new Error(`invalid header name: ${k.slice(0, 20)}`)
+        if ('.' === k[0] && '.priority' !== k) {
+            throw new Error(`unknown dot key: ${k.slice(0,20)}`)
+        }
         r[k.toLowerCase()] = v
     }
     return r

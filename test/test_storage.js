@@ -25,16 +25,23 @@ suite('ini', function() {
         assert.throws( () => { storage.ini_parse('[q q]\nw=1') })
     })
 
+    test('invalid section', function() {
+        assert.throws( () => { storage.ini_parse('[q]\n') },
+                     /empty section for q$/)
+    })
+
     test('invalid keypair', function() {
-        assert.throws( () => { storage.ini_parse('[q]\nw w = 1') })
-        assert.throws( () => { storage.ini_parse('[q]\nw.=1') })
+        assert.throws( () => { storage.ini_parse('[q]\nw w = 1') },
+                     /invalid header name/)
+        assert.throws( () => { storage.ini_parse('[q]\n.w=1') },
+                     /unknown dot key/)
     })
 
     test('valid keypair', function() {
-        let r = storage.ini_parse('[example.com:80]\nq=1\n.w=2')
+        let r = storage.ini_parse('[example.com:80]\nq=1\n.priority=2')
         assert.deepEqual(r, {
             "||example.com/": {
-                ".w": "2",
+                ".priority": "2",
                 "q": "1"
             }
         })
