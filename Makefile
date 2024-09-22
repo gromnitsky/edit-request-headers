@@ -12,10 +12,11 @@ all:
 npm.src := node_modules/plain-dialogs/index.mjs
 include extensions.mk
 
-$(out)/ext/inireader.js: node_modules/inireader/index.js
+$(out)/ext/vendor/inireader.js: node_modules/inireader/index.js
+	@mkdir -p $(dir $@)
 	./esbuild.js $< > $@
 
-dest += $(out)/ext/inireader.js
+dest += $(out)/ext/vendor/inireader.js
 
 all: $(dest)
 

@@ -1,4 +1,4 @@
-import inireader from './inireader.js'
+import inireader from './vendor/inireader.js'
 
 export async function area_name() {
     let v = await chrome.management.getSelf()

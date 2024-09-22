@@ -10,10 +10,9 @@ async function main() {
 
 function is_firefox() { return navigator.userAgent.indexOf('Firefox') !== -1 }
 
-if (!is_firefox()) {
-    chrome.declarativeNetRequest.onRuleMatchedDebug.addListener(evt => {
-        console.log(evt)
-    })
+let rule_debug = chrome.declarativeNetRequest.onRuleMatchedDebug
+if ( !is_firefox() && rule_debug) {
+    rule_debug.addListener(console.log)
 }
 
 main()

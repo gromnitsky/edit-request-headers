@@ -5,7 +5,7 @@ function(browser="chrome", debug=true) {
   "permissions": [
     "declarativeNetRequest",
     "storage"
-  ] + if (debug) then ["declarativeNetRequestFeedback"] else [],
+  ] + if (debug && browser != "firefox") then ["declarativeNetRequestFeedback"] else [],
   "host_permissions": [
     "<all_urls>"
   ],
