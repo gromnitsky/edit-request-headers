@@ -15,5 +15,12 @@ if ( !is_firefox() && rule_debug) {
     rule_debug.addListener(console.log)
 }
 
+// open options page on install
+chrome.runtime.onInstalled.addListener( obj => {
+    if (obj.reason !== chrome.runtime.OnInstalledReason.INSTALL) return
+    let url = chrome.runtime.getURL("options.html")
+    chrome.tabs.create({ url })
+})
+
 main()
 console.log('service worker')

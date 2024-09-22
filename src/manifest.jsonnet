@@ -1,6 +1,7 @@
 function(browser="chrome", debug=true) {
   "manifest_version": 3,
   "name": "Edit Request Headers",
+  "description": "Add/Modify/Remove HTTP request headers (like Referer or Cookie) via declarativeNetRequest.",
   "version": "0.0.1",
   "permissions": [
     "declarativeNetRequest",
