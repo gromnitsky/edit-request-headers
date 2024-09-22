@@ -1,6 +1,6 @@
-export default function rules(user_settings) {
+export function parse(user_settings) {
     return Object.keys(user_settings).map( (key, idx) => {
-        return rule(key, user_settings[key], idx)
+        return rule(key, user_settings[key], idx+1)
     })
 }
 
@@ -33,4 +33,15 @@ function rule(key, val, id) {
     }
 
     return r
+}
+
+export function update(my_rules) {
+    return chrome.declarativeNetRequest.getDynamicRules().then( old => {
+        return old.map( rule => rule.id)
+    }).then( ids => {
+        return chrome.declarativeNetRequest.updateDynamicRules({
+            removeRuleIds: ids,
+            addRules: my_rules
+        })
+    })
 }

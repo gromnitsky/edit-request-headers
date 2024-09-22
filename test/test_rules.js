@@ -1,5 +1,5 @@
 let storage = await import(`../${process.env.out}/ext/storage.js`)
-let rules = (await import(`../${process.env.out}/ext/rules.js`)).default
+let rules = (await import(`../${process.env.out}/ext/rules.js`))
 import assert from 'assert'
 
 let area = {
@@ -13,10 +13,10 @@ suite('rules', function() {
     test('smoke', async function() {
         let s = new storage.Storage(area)
         let user_settings = storage.ini_parse(await s.get('ini'))
-        let r = rules(user_settings)
+        let r = rules.parse(user_settings)
         assert.deepEqual(r, [
             {
-                "id" : 0,
+                "id" : 1,
                 "action" : {
                     "type": "modifyHeaders",
                     "requestHeaders": [
@@ -45,7 +45,7 @@ suite('rules', function() {
     })
 
     test('priority key ignored', function() {
-        let r = rules({
+        let r = rules.parse({
             '||127.0.0.1/': {
                 '.priority': '1',
                 'omg': 'lol'
@@ -53,7 +53,7 @@ suite('rules', function() {
         })
         assert.deepEqual(r, [
             {
-                "id" : 0,
+                "id" : 1,
                 "action" : {
                     "type": "modifyHeaders",
                     "requestHeaders": [
@@ -73,7 +73,7 @@ suite('rules', function() {
     })
 
     test('priority key included', function() {
-        let r = rules({
+        let r = rules.parse({
             '||127.0.0.1/': {
                 '.priority': '2',
                 'omg': 'lol'
@@ -81,7 +81,7 @@ suite('rules', function() {
         })
         assert.deepEqual(r, [
             {
-                "id" : 0,
+                "id" : 1,
                 "priority": 2,
                 "action" : {
                     "type": "modifyHeaders",
