@@ -19,7 +19,7 @@ class App {
             document.querySelector('#storage_area_info').innerText = v
         })
 
-        this.textarea_update()
+        this.textarea_load()
         let input = debounce( () => this.node_save.disabled = false, 500)
         this.node_textarea.addEventListener('input', input)
 
@@ -27,8 +27,8 @@ class App {
         this.node_reset.onclick = this.reset.bind(this)
     }
 
-    textarea_update() {
-        this.storage.get('ini').then( str => {
+    textarea_load() {
+        return this.storage.get('ini').then( str => {
             this.node_textarea.value = str
             this.node_save.disabled = true
         })
@@ -50,7 +50,11 @@ class App {
     reset() {
         plainDialogs.confirm('Are you sure? This cannot be undone.')
             .then( () => {
-                this.storage.clear().then(this.textarea_update.bind(this))
+                return this.storage.clear()
+            }).then( () => {
+                return this.textarea_load()
+            }).then( () => {
+                this.save()
             })
     }
 }
