@@ -38,6 +38,7 @@ suite('rules', function() {
                 },
                 "condition" : {
                     "urlFilter" : "||127.0.0.1/",
+                    resourceTypes: ["main_frame", "sub_frame", "stylesheet", "script", "image", "font", "object", "xmlhttprequest", "ping", "csp_report", "media", "websocket", "other"]
                 }
             }
         ])
@@ -65,6 +66,7 @@ suite('rules', function() {
                 },
                 "condition" : {
                     "urlFilter" : "||127.0.0.1/",
+                    resourceTypes: ["main_frame", "sub_frame", "stylesheet", "script", "image", "font", "object", "xmlhttprequest", "ping", "csp_report", "media", "websocket", "other"]
                 }
             }
         ])
@@ -93,6 +95,7 @@ suite('rules', function() {
                 },
                 "condition" : {
                     "urlFilter" : "||127.0.0.1/",
+                    resourceTypes: ["main_frame", "sub_frame", "stylesheet", "script", "image", "font", "object", "xmlhttprequest", "ping", "csp_report", "media", "websocket", "other"]
                 }
             }
         ])

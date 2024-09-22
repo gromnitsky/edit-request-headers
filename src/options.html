@@ -1,0 +1,45 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ERH Options</title>
+
+<style>
+  :root {
+    --gutter: 10px;
+    --max-width: 800px;
+  }
+  html {
+    height: 100%;
+  }
+  body {
+    max-width: var(--max-width);
+    margin: var(--gutter) auto;
+    padding: 0 var(--gutter);
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - var(--gutter)*2);
+  }
+  nav, footer {
+    display: flex;
+    justify-content: space-between;
+  }
+  textarea {
+    margin: var(--gutter) 0;
+    flex: 1;
+  }
+</style>
+
+<nav>
+  <button id="save">Save</button>
+  <button id="reset">Reset to defaults</button>
+</nav>
+
+<textarea spellcheck="false"></textarea>
+
+<footer>
+  <div>Storage area: <code id="storage_area_info">?</code></div>
+  <div>
+    <a target="_blank" href="https://github.com/gromnitsky/edit-request-headers">Help</a>
+  </div>
+
+<script type="module" src="options.js"></script>

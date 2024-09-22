@@ -16,6 +16,7 @@ function(browser="chrome", debug=true) {
     "type": "module",
     "service_worker": "service_worker.js"
   },
+  "options_page": "options.html",
   [if browser == "firefox" then "browser_specific_settings"]: {
     "gecko": {
       "id": "{a5a53cb1-47dd-4bee-a8d2-c32ea310a244}",

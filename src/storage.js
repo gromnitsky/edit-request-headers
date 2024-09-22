@@ -1,10 +1,11 @@
 import inireader from './inireader.js'
 
-export function area() {
-    return chrome.management.getSelf().then( v => {
-        return chrome.storage[v.installType === 'development' ? 'local': 'sync']
-    })
+export async function area_name() {
+    let v = await chrome.management.getSelf()
+    return v.installType === 'development' ? 'local': 'sync'
 }
+
+export async function area() { return chrome.storage[await area_name()] }
 
 export class Storage {
     constructor(area) {
