@@ -7,10 +7,7 @@ export function parse(user_settings) {
 function rule(key, val, id) {
     let r = {
         id,
-        condition: {
-            urlFilter : key,
-            resourceTypes : ["main_frame", "sub_frame"]
-        },
+        condition: { urlFilter : key },
         action: {
             type: 'modifyHeaders',
             requestHeaders: []

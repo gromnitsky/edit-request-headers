@@ -38,7 +38,6 @@ suite('rules', function() {
                 },
                 "condition" : {
                     "urlFilter" : "||127.0.0.1/",
-                    "resourceTypes" : ["main_frame", "sub_frame"]
                 }
             }
         ])
@@ -66,7 +65,6 @@ suite('rules', function() {
                 },
                 "condition" : {
                     "urlFilter" : "||127.0.0.1/",
-                    "resourceTypes" : ["main_frame", "sub_frame"]
                 }
             }
         ])
@@ -95,7 +93,6 @@ suite('rules', function() {
                 },
                 "condition" : {
                     "urlFilter" : "||127.0.0.1/",
-                    "resourceTypes" : ["main_frame", "sub_frame"]
                 }
             }
         ])

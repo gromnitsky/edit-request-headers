@@ -1,6 +1,6 @@
 src := $(shell find src -type f | grep -v '\.jsonnet')
 dest := $(patsubst src/%, $(out)/ext/%, $(src)) $(out)/ext/manifest.json
-jsonnet := jsonnet --tla-code 'browser="$(browser)"'
+jsonnet := jsonnet --tla-code 'browser="$(browser)"' --tla-code debug=$(debug)
 pkg := $(out)/$(shell $(jsonnet) src/manifest.jsonnet | jq -r '.name+"-"+.version' | tr ' ' _)
 
 $(out)/ext/%: src/%

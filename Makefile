@@ -4,6 +4,7 @@
 $(if $(MAKE_RESTARTS), $(info RESTARTING MAKE))
 
 browser := chrome
+debug := true
 export out := _out/$(shell git rev-parse --abbrev-ref HEAD)/$(browser)
 
 all:
