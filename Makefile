@@ -12,6 +12,11 @@ all:
 npm.src := node_modules/plain-dialogs/index.mjs
 include extensions.mk
 
+$(out)/ext/icon.128.png: src/icon.svg
+	inkscape $< -o $@ -w 128 -h 128
+
+dest := $(filter-out %.svg, $(dest)) $(out)/ext/icon.128.png
+
 $(out)/ext/vendor/inireader.js: node_modules/inireader/index.js
 	@mkdir -p $(dir $@)
 	./esbuild.js $< > $@
