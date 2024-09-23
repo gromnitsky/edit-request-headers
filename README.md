@@ -2,6 +2,8 @@ A browser extension (manifest v3) to add, modify, or remove HTTP
 request headers (such as Referer or Cookie) using the
 declarativeNetRequest API.
 
+* [.crx file][]
+
 Upon installation, you'll see an options page resembling an INI-file
 editor:
 
@@ -26,6 +28,20 @@ priority). For each extension, browser picks at most 1 candidate per
 request, hence when > 1 extension has a matching rule, increasing the
 value of the `.priority` key may help.
 
+## Install
+
+~~~
+$ sudo dnf install jq jsonnet
+$ make crx
+$ find -name \*crx
+~~~
+
+Drag-and-drop a generated .crx into `chrome://extensions/`, then visit
+a [test page][]
+
 ## License
 
 MIT
+
+[.crx file]: https://gromnitsky.users.sourceforge.net/js/chrome/
+[test page]: https://gromnitsky.users.sourceforge.net/js/chrome/edit-request-headers-test/

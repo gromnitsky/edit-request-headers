@@ -9,21 +9,23 @@ export out := _out/$(shell git rev-parse --abbrev-ref HEAD)/$(browser)
 
 all:
 
+dest := $(out)/ext/icon.128.png $(out)/ext/vendor/inireader.js
+dest-exclude := %/icon.svg
 npm.src := node_modules/plain-dialogs/index.mjs
 include extensions.mk
 
 $(out)/ext/icon.128.png: src/icon.svg
+	@mkdir -p $(dir $@)
 	inkscape $< -o $@ -w 128 -h 128
-
-dest := $(filter-out %.svg, $(dest)) $(out)/ext/icon.128.png
 
 $(out)/ext/vendor/inireader.js: node_modules/inireader/index.js
 	@mkdir -p $(dir $@)
 	./esbuild.js $< > $@
 
-dest += $(out)/ext/vendor/inireader.js
-
 all: $(dest)
 
 .PHONY: test
 test: $(dest); node_modules/.bin/mocha -u tdd test/test_* $(o)
+
+upload-test:
+	rsync -avPL --delete -e ssh test/page/ gromnitsky@web.sourceforge.net:/home/user-web/gromnitsky/htdocs/js/chrome/edit-request-headers-test/

@@ -1,5 +1,5 @@
 src := $(shell find src -type f | grep -v '\.jsonnet')
-dest := $(patsubst src/%, $(out)/ext/%, $(src)) $(out)/ext/manifest.json
+dest := $(dest) $(patsubst src/%, $(out)/ext/%, $(src)) $(out)/ext/manifest.json
 jsonnet := jsonnet --tla-code 'browser="$(browser)"' --tla-code debug=$(debug)
 pkg := $(out)/$(shell $(jsonnet) src/manifest.jsonnet | jq -r '.name+"-"+.version' | tr ' ' _)
 
@@ -16,6 +16,10 @@ _out/private.pem:
 	openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out $@
 
 -include npm.mk
+
+ifdef dest-exclude
+dest := $(filter-out $(dest-exclude),$(dest))
+endif
 
 zip: $(pkg).zip
 $(pkg).zip: $(dest)
