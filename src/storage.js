@@ -29,7 +29,7 @@ user-agent =
         })
     }
 
-    set(key, str) {
+    async set(key, str) {
         if (!key) throw new Error('key is required')
         ini_parse(str)          // validate
         return this.area.set({[key]: str})
