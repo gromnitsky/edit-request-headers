@@ -1,8 +1,7 @@
 export class Token {
-    constructor(type, value, raw, line) {
+    constructor(type, value, line) {
         this.type = type
         this.value = value
-        this.raw = raw
         this.line = line
     }
 }
@@ -13,90 +12,143 @@ function err(input, line, msg) {
 }
 
 export class Lexer {
-    static TOKEN_TYPES = [
-        ['newline', /\n/ ],
-        ['comment', /[;#][^\n]*/ ],
-        ['section', /\[\s*([^\][\n]+)\s*\]/ ],
-        ['key', /[a-zA-Z0-9_.-]+/],
-        ['op', /=/],
-        ['value-quoted-double', /"([^"\\\n]*(\\.[^"\\\n]*)*)"/],
-        ['value-quoted-single', /'([^'\\\n]*(\\.[^'\\\n]*)*)'/],
-        ['value', /[^\n]+(?=\\\n)/],
+    static TOKEN_TYPES_PASS1 = [
+        ['comment', /[;#][^\n]*\n/ ],
+        ['data', /[^\n]+(?=\\\n)/],
         ['backslash-eol', /\\\n/],
-        ['value', /[^\n]+/],
+        ['data', /[^\n]+/],
+        ['newline', /\n[ \t]*/ ],
     ]
+    static STR_RE = /"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)'/g
 
     constructor(file, str) {
-        this.file = file
         this.str = str || ''
         this.pos = 0
         this.line = 1
+        this.file = file
     }
 
     err(msg) { throw err(this.file, this.line, msg) }
 
-    tokenise() {
+    tokenise_pass1() {
         let tokens = []
         let str = this.str
-        let left_trim = true
-        let backslash_mode, prev_token
 
         while (str.length > 0) {
-            let token = this.token(str, left_trim); if (!token) {
+            let token = this.token(str); if (!token) {
                 this.err(`Failed to match token on \`${str.slice(0,20)}…\``)
             }
-            if (['backslash-eol','newline'].includes(token.type)) this.line += 1
-            left_trim = true
+            if (['comment', 'backslash-eol','newline'].includes(token.type))
+                this.line += 1
 
-            if (backslash_mode) {
-                switch (token.type) {
-                case 'newline':
-                    if (['backslash-eol','newline'].includes(prev_token.type)) {
-                        this.err(`Invalid catenation: newline after ${prev_token.type}`)
-                    }
-                    break
-                case 'comment': // do nothing
-                    break
-                default:
-                    token.type = 'value'
-                    token.value = ' ' + token.raw
-                    backslash_mode = false
-                }
-
-            } else if (token.type === 'key' && prev_token?.type === 'op') {
-                token.type = 'value'
-//                token._d = 1
-                left_trim = false
-
-            } else if (token.type === 'backslash-eol') {
-                backslash_mode = true
-            }
-
-            delete token.raw
             tokens.push(token)
-            prev_token = token
             str = this.str.slice(this.pos)
         }
 
         return tokens
     }
 
-    token(str, left_trim) {
-        if (left_trim) {
-            let m = str.match(/^[ \t]+/); if (m) {
-                this.pos += m[0].length
-                str = this.str.slice(this.pos)
-                if (!str.length)
-                    return new Token('space-trailing', m[0], m[0], this.line)
+    filter_pass1(tokens) {
+        let r = []
+        let backslash_mode, prev_node
+        for (let t of tokens) {
+            if (t.type === 'comment') continue
+
+            if (backslash_mode) {
+                if (t.type !== 'data') this.err('Invalid catenation')
+                prev_node.value = prev_node.value + ' ' + t.value
+                backslash_mode = false
+                continue
+            } else if (t.type === 'newline') {
+                continue
+            } else if (t.type === 'backslash-eol') {
+                backslash_mode = true
+                continue
             }
+
+            r.push(t)
+            prev_node = t
+        }
+        return r
+    }
+
+    token(str) {
+        let m = str.match(/^[ \t]+/); if (m) { // left trim
+            this.pos += m[0].length
+            str = this.str.slice(this.pos)
         }
 
-        for (let [type, regexp] of Lexer.TOKEN_TYPES) {
+        for (let [type, regexp] of Lexer.TOKEN_TYPES_PASS1) {
             let re = new RegExp('^' + regexp.source)
             let m; if ( (m = str.match(re))) {
                 this.pos += m[0].length
-                return new Token(type, m[1] ?? m[0], m[0], this.line)
+                return new Token(type, m[1] ?? m[0], this.line)
             }
         }
     }
+
+    tokenise() {
+        let tp1 = this.tokenise_pass1()
+        let fp1 = this.filter_pass1(tp1)
+
+        let tokens = []
+        for (let token of fp1) {
+            let m, t
+            this.line = token.line
+            let text = token.value.trim()
+
+            if ( (m = text.match(/^\[([^\][]+)\]$/))) {
+                t = new Token('section', m[1].trim(), this.line)
+            } else if ( (m = text.match(/^([a-zA-Z0-9._-]+)\s*=\s*(.*)/))) {
+                t = [
+                    new Token('key', m[1], this.line),
+                    new Token('val', unpack_quoted_strings(m[2]), this.line)
+                ]
+            }
+
+            if (!t)
+                this.err(`failed to tokenise \`${token.value.slice(0,20)}…\``)
+            tokens.push(t)
+        }
+
+        return tokens
+    }
+}
+
+function unpack_quoted_strings(str) {
+    let r = []
+    let matches = [...str.matchAll(Lexer.STR_RE)]
+    for (let idx = 0; idx < matches.length; idx++) {
+        let cur = matches[idx]
+        if (!r.length) r.push(str.slice(0, cur.index))
+        let val = cur[1] ?? cur[2]
+        r.push(val)
+        let next = matches[idx+1]
+        if (next) r.push(str.slice(cur.index+cur[0].length, next.index))
+    }
+
+    return unescape(r.length ? r.join`` : str)
+}
+
+// TODO: add
+// "\xxx"	character number xx in hexadecimal encoding
+// "\nnn"	character number nnn in octal encoding
+// "\unnnn"	unicode code point nnnn in hexadecimal encoding
+// "\Unnnnnnnn"	unicode code point nnnnnnnn in hexadecimal encoding
+function unescape(str) {
+    if (!str) return str
+    return str.replace(/\\([abfnrtv\\"'s])/g, (_, ch) => {
+        return {
+            'a' : '<bell>',         // FIXME
+            'b' : '\b;',
+            'f' : '\f',
+            'n' : '\n',
+            't' : '\t',
+            'v' : '\v',
+            '\\': '\\',
+            "'" : "'",
+            '"' : '"',
+            's' : ' ',
+        }[ch]
+    })
 }
