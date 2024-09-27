@@ -12,11 +12,24 @@ function tokchk(str, expected) {
     str_eq(r, expected)
 }
 
+function tokchk_fail(str, error_message) {
+    let lexer = new ini.Lexer(null, str)
+    assert.throws( () => {
+        lexer.tokenise()
+    }, error_message)
+}
+
 suite('ini', function() {
     setup(function() {
     })
 
     test('lexer good', function() {
+        tokchk(``, '[]')
+        tokchk(` `, '[]')
+        tokchk(`#`, '[]')
+        tokchk(`# `, '[]')
+        tokchk(` ;`, '[]')
+        tokchk(` ;  `, '[]')
         tokchk(`[a]`, `[ Token { type: 'section', value: 'a', line: 1 } ]`)
         tokchk(`
 [a]
@@ -99,18 +112,28 @@ foo = bar\\
     Token { type: 'val', value: 'foo', line: 1 }
   ]
 ]`)
-
         tokchk(`a = "f'o\\"o b\\sr"`, `[
   [
     Token { type: 'key', value: 'a', line: 1 },
     Token { type: 'val', value: \`f'o"o b r\`, line: 1 }
   ]
 ]`)
-
         tokchk(`a = q "w\\" 'e" r 't' "y" u`, `[
   [
     Token { type: 'key', value: 'a', line: 1 },
     Token { type: 'val', value: \`q w" 'e r t y\`, line: 1 }
+  ]
+]`)
+        tokchk(`a = ''`, `[
+  [
+    Token { type: 'key', value: 'a', line: 1 },
+    Token { type: 'val', value: '', line: 1 }
+  ]
+]`)
+        tokchk(`a = ' '`, `[
+  [
+    Token { type: 'key', value: 'a', line: 1 },
+    Token { type: 'val', value: ' ', line: 1 }
   ]
 ]`)
 
@@ -118,6 +141,27 @@ foo = bar\\
 
 
     test('lexer bad', function() {
+        tokchk_fail(`[`, /failed to tokenise/)
+        tokchk_fail(`[a`, /failed to tokenise/)
+        tokchk_fail(`[a[]`, /failed to tokenise/)
+        tokchk_fail(`[a\\[]`, /failed to tokenise/)
+        tokchk_fail(`a`, /failed to tokenise/)
+        tokchk_fail(`a\\`, /failed to tokenise/)
+        tokchk_fail(`=`, /failed to tokenise/)
+        tokchk_fail(`!=2`, /failed to tokenise/)
+        tokchk_fail(`=2`, /failed to tokenise/)
+
+        tokchk_fail(`[a]
+foo = 1\\
+# comment
+
+      2`, /Invalid catenation/)
+        tokchk_fail(`[a]
+foo = 1\\
+
+# comment
+      2`, /Invalid catenation/)
+
     })
 
 })

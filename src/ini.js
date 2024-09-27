@@ -22,7 +22,7 @@ export class Lexer {
     static STR_RE = /"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)'/g
 
     constructor(file, str) {
-        this.str = str || ''
+        this.str = str ? (str + "\n") : ''
         this.pos = 0
         this.line = 1
         this.file = file
@@ -59,7 +59,7 @@ export class Lexer {
                 prev_node.value = prev_node.value + ' ' + t.value
                 backslash_mode = false
                 continue
-            } else if (t.type === 'newline') {
+            } else if (t.type === 'newline' || t.type === 'spaces') {
                 continue
             } else if (t.type === 'backslash-eol') {
                 backslash_mode = true
@@ -76,6 +76,7 @@ export class Lexer {
         let m = str.match(/^[ \t]+/); if (m) { // left trim
             this.pos += m[0].length
             str = this.str.slice(this.pos)
+            if (!str.length) return new Token('spaces', m[0], this.line)
         }
 
         for (let [type, regexp] of Lexer.TOKEN_TYPES_PASS1) {
