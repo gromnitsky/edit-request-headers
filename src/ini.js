@@ -1,3 +1,7 @@
+/*
+  Spec: https://www.freedesktop.org/software/systemd/man/255/systemd.syntax.html
+*/
+
 export class Token {
     constructor(type, value, line) {
         this.type = type
@@ -7,7 +11,7 @@ export class Token {
 }
 
 function err(input, line, msg) {
-    let coords = [input, line, 1].filter(Boolean).join`:`
+    let coords = [input || '[memory]', line, 1].join`:`
     return new Error([coords, msg].join`: `)
 }
 
@@ -152,4 +156,56 @@ function unescape(str) {
             's' : ' ',
         }[ch]
     })
+}
+
+export let LINE = Symbol('line')
+
+export function parse(tokens, opt) {
+    opt = opt || { // TODO
+        booleans: false,
+        numbers: false,
+        time: false
+    }
+
+    let r = {}
+    let section
+    tokens.forEach( (token, idx) => {
+        if (0 === idx && Array.isArray(token)) {
+            throw err(null, token[0].line, 'No section')
+        }
+
+        if (Array.isArray(token)) {
+            let newval = {
+                [LINE]: token[0].line,
+                value: tr(token[1].value, opt)
+            }
+            let prev = section[token[0].value]
+            if (prev) {
+                prev[LINE] = newval[LINE]
+                if ('' === newval.value) {
+                    prev.value = ''
+                } else if (Array.isArray(prev.value)) {
+                    prev.value.push(newval.value)
+                } else {
+                    prev.value = [prev.value, newval.value]
+                }
+            } else {
+                section[token[0].value] = newval
+            }
+
+        } else {
+            section = r[token.value] = {
+                [LINE]: token.line
+            }
+        }
+    })
+    return r
+}
+
+// TODO
+// * booleans /1|yes|true|on/ and /0|no|false|off/
+// * numbers
+// * time
+function tr(str, opt) {
+    return str
 }

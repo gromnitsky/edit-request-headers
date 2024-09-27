@@ -19,11 +19,11 @@ function tokchk_fail(str, error_message) {
     }, error_message)
 }
 
-suite('ini', function() {
+suite('Lexer', function() {
     setup(function() {
     })
 
-    test('lexer good', function() {
+    test('good', function() {
         tokchk(``, '[]')
         tokchk(` `, '[]')
         tokchk(`#`, '[]')
@@ -140,7 +140,7 @@ foo = bar\\
     })
 
 
-    test('lexer bad', function() {
+    test('bad', function() {
         tokchk_fail(`[`, /failed to tokenise/)
         tokchk_fail(`[a`, /failed to tokenise/)
         tokchk_fail(`[a[]`, /failed to tokenise/)
@@ -162,6 +162,44 @@ foo = 1\\
 # comment
       2`, /Invalid catenation/)
 
+    })
+
+})
+
+suite('parse', function() {
+    test('good', function() {
+        let lexer = new ini.Lexer(null, `[a]
+foo=1.0
+bar=2
+foo=1.1
+[b]
+[c]
+baz=3.0
+baz=3.1
+baz=3.2
+baz=
+qux=4`)
+        let tokens = lexer.tokenise()
+        let r = ini.parse(tokens)
+        assert.deepEqual(r, {
+            a: {
+                [ini.LINE]: 1,
+                foo: { value: ['1.0', '1.1'], [ini.LINE]: 4 },
+                bar: { value: '2', [ini.LINE]: 3 },
+            },
+            b: { [ini.LINE]: 5 },
+            c: {
+                [ini.LINE]: 6,
+                baz: { value: '', [ini.LINE]: 10 },
+                qux: { value: '4', [ini.LINE]: 11 },
+            }
+        })
+    })
+
+    test('bad', function() {
+        let lexer = new ini.Lexer(null, '\n\na=1')
+        let tokens = lexer.tokenise()
+        assert.throws( () => ini.parse(tokens), /No section/)
     })
 
 })
