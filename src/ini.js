@@ -141,15 +141,14 @@ function unpack_quoted_strings(str) {
 // "\unnnn"	unicode code point nnnn in hexadecimal encoding
 // "\Unnnnnnnn"	unicode code point nnnnnnnn in hexadecimal encoding
 function unescape(str) {
-    if (!str) return str
-    return str.replace(/\\([abfnrtv\\"'s])/g, (_, ch) => {
+    return (str || '').replace(/\\([abfnrtv\\"'s])/g, (_, ch) => {
         return {
-            'a' : '<bell>',         // FIXME
-            'b' : '\b;',
-            'f' : '\f',
+            'a' : '\x07',
+            'b' : '\x08;',
+            'f' : '\x0c',
             'n' : '\n',
             't' : '\t',
-            'v' : '\v',
+            'v' : '\x0b',
             '\\': '\\',
             "'" : "'",
             '"' : '"',
