@@ -1,5 +1,5 @@
 import * as ini from '../src/ini.js'
-import assert from 'assert'
+import assert from 'assert/strict'
 import util from 'util'
 
 function str_eq(expected, actual) {
@@ -180,7 +180,7 @@ baz=3.2
 baz=
 qux=4`)
         let tokens = lexer.tokenise()
-        let r = ini.parse(tokens)
+        let r = ini.parse_tokens(tokens)
         assert.deepEqual(r, {
             a: {
                 [ini.LINE]: 1,
@@ -197,9 +197,7 @@ qux=4`)
     })
 
     test('bad', function() {
-        let lexer = new ini.Lexer(null, '\n\na=1')
-        let tokens = lexer.tokenise()
-        assert.throws( () => ini.parse(tokens), /No section/)
+        assert.throws( () => ini.parse('\n\na=1'), /No section/)
     })
 
 })

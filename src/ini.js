@@ -160,7 +160,7 @@ function unescape(str) {
 
 export let LINE = Symbol('line')
 
-export function parse(tokens, opt) {
+export function parse_tokens(tokens, opt) {
     opt = opt || { // TODO
         booleans: false,
         numbers: false,
@@ -208,4 +208,11 @@ export function parse(tokens, opt) {
 // * time
 function tr(str, opt) {
     return str
+}
+
+export function parse(str, opt) {
+    opt = opt || {}
+    let lexer = new Lexer(opt.file, str)
+    let tokens = lexer.tokenise()
+    return parse_tokens(tokens, opt)
 }
