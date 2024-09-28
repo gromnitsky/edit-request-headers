@@ -194,6 +194,18 @@ qux=4`)
                 qux: { value: '4', [ini.LINE]: 11 },
             }
         })
+
+        r = ini.parse(`[a]
+a = 1
+a = 2
+a =
+a = 3`)
+        assert.deepEqual(r, {
+            a: {
+                [ini.LINE]: 1,
+                a: { value: '3', [ini.LINE]: 5 }
+            }
+        })
     })
 
     test('bad', function() {

@@ -187,7 +187,8 @@ export function parse_tokens(tokens, opt) {
                 } else if (Array.isArray(prev.value)) {
                     prev.value.push(newval.value)
                 } else {
-                    prev.value = [prev.value, newval.value]
+                    prev.value = prev.value.length
+                        ? [prev.value, newval.value] : newval.value
                 }
             } else {
                 section[token[0].value] = newval
