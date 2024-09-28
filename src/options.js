@@ -16,16 +16,18 @@ class App {
         this.node_reset  = document.querySelector('#reset')
         this.node_debug  = document.querySelector('#storage_area_info')
 
-        let input = debounce( () => this.node_save.disabled = false, 500)
+        this.save_disable = debounce( (hint) => {
+            this.node_save.disabled = hint
+        }, 500)
 
         this.editor_view = new editor.EditorView({
             extensions: [editor.basicSetup,
-                         editor.EditorView.updateListener.of( v => {
-                            if (v.docChanged) input()
-                         })],
+                         editor.lintGutter(),
+                         this.editor_update_listener(),
+                         this.my_linter()],
             parent: document.querySelector('#editor')
         })
-        this.editor_load()
+        this.load()
 
         browser_storage.area_name().then( v => {
             document.querySelector('#storage_area_info').innerText = v
@@ -36,31 +38,58 @@ class App {
         this.node_debug.onclick = this.ini_parse_debug.bind(this)
     }
 
+    editor_update_listener() {
+        return editor.EditorView.updateListener.of( v => {
+            if (v.docChanged) {
+                let hint = v.transactions[0].annotations.find( v => v.value === "load")
+                this.save_disable(hint)
+            }
+        })
+    }
+
+    my_linter() {
+        return editor.linter( () => {
+            let diagnostics = []
+            try {
+                browser_storage.ini_parse(this.doc().toString())
+            } catch (e) {
+                if (!e.line_number) return diagnostics
+
+                let pos = this.doc().line(e.line_number)
+                diagnostics.push({
+                    from: pos.from,
+                    to: pos.to,
+                    severity: "error",
+                    message: e.message,
+                })
+            }
+            return diagnostics
+        })
+    }
+
+    doc() { return this.editor_view.state.doc; }
+
     ini_parse_debug() {
-        console.log(browser_storage.ini_parse(this.editor_text()))
+        console.log(browser_storage.ini_parse(this.doc().toString()))
     }
 
-    editor_text() {
-        return this.editor_view.state.doc.toString()
-    }
-
-    editor_load() {
+    load() {
         return this.storage.get('ini').then( str => {
             this.editor_view.dispatch({ // delete
                 changes: {
-                    from: 0, to: this.editor_view.state.doc.length,
+                    from: 0, to: this.doc().length,
                     insert: ''
                 }
             })
             this.editor_view.dispatch({
-                changes: {from: 0, insert: str}
+                changes: {from: 0, insert: str},
+                annotations: {value: 'load'}
             })
-            this.node_save.disabled = true
         })
     }
 
     save() {
-        let str = this.editor_text()
+        let str = this.doc().toString()
         this.storage.set('ini', str)
             .then( () => {    // reload rules
                 let user_settings = browser_storage.ini_parse(str)
@@ -80,7 +109,7 @@ class App {
             .then( () => {
                 return this.storage.clear()
             }).then( () => {
-                return this.editor_load()
+                return this.load()
             }).then( () => {
                 this.save()
             })
