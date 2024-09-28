@@ -1,4 +1,4 @@
-let storage = await import(`../${process.env.out}/ext/storage.js`)
+import * as storage from '../src/storage.js'
 import assert from 'assert'
 
 suite('ini', function() {
@@ -21,18 +21,23 @@ suite('ini', function() {
     })
 
     test('invalid domain', function() {
-        assert.throws( () => { storage.ini_parse('[]\nw=1') })
-        assert.throws( () => { storage.ini_parse('[q q]\nw=1') })
+        assert.throws( () => storage.ini_parse('[]\nw=1'), /failed to tokenise/)
+        assert.throws( () => storage.ini_parse('[q q]\nw=1'), /invalid url/)
     })
 
     test('invalid section', function() {
         assert.throws( () => { storage.ini_parse('[q]\n') },
-                     /empty section for q$/)
+                       /empty section/)
+        try {
+            storage.ini_parse('\n[q]\n')
+        } catch (e) {
+            assert.equal(e.coords, 2)
+        }
     })
 
     test('invalid keypair', function() {
         assert.throws( () => { storage.ini_parse('[q]\nw w = 1') },
-                     /invalid header name/)
+                     /failed to tokenise/)
         assert.throws( () => { storage.ini_parse('[q]\n.w=1') },
                      /unknown dot key/)
     })

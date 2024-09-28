@@ -1,4 +1,4 @@
-import inireader from './vendor/inireader.js'
+import * as ini from './ini.js'
 
 export async function area_name() {
     let v = await chrome.management.getSelf()
@@ -41,31 +41,31 @@ user-agent =
 }
 
 export function ini_parse(str) {
-    let parser = new inireader.IniReader()
-    parser.load = function(s) { // a monkey patch for v2.2.1
-        this.lines = s.split("\n").filter(Boolean)
-        this.values = this.parseFile()
-        this.emit('fileParse')
-    }
-    parser.load(str || '')
+    let conf = ini.parse(str)
     let r = {}
-    for (let [url_condition, v] of Object.entries(parser.getBlock())) {
-        r[domain(url_condition)] = keypairs(url_condition, v)
+    for (let [url_condition, v] of Object.entries(conf)) {
+        r[domain(url_condition, v[ini.LINE])] = keypairs(url_condition, v)
     }
     return r
 }
 
-function domain(str = '') {
+function err(msg, coords) {
+    let r = new Error(msg)
+    r.coords = coords
+    return r
+}
+
+function domain(str = '', line_number) {
     let protocol = ''
-    if (!/^[a-z]+:/i.test(str)) {
+    if (!/^https?:/i.test(str)) {
         protocol = 'http://'
-        str = [protocol, str].join`/`
+        str = [protocol, str].join``
     }
     let url
     try {
         url = new URL(str)
     } catch (_) {
-        throw new Error(`invalid url: ${str.slice(0, 50)}`)
+        throw err('invalid url', line_number)
     }
     let pathname = `${url.pathname}/`.replace(/\/+/g, '/')
     return [protocol ? '||' : '|', protocol ? '' : `${url.protocol}//`,
@@ -73,16 +73,18 @@ function domain(str = '') {
 }
 
 function keypairs(url_condition, obj) {
-    if (!Object.keys(obj).length)
-        throw new Error(`empty section for ${url_condition.slice(0, 20)}`)
+    let line_number = obj[ini.LINE]
+    if (!Object.keys(obj).length) {
+        throw err('empty section', line_number)
+    }
     let r = {}
     for (let [k, v] of Object.entries(obj)) {
         if ( !/^\.?[a-z_-]+$/i.test(k))
-            throw new Error(`invalid header name: ${k.slice(0, 20)}`)
+            throw err('invalid header name', line_number)
         if ('.' === k[0] && '.priority' !== k) {
-            throw new Error(`unknown dot key: ${k.slice(0,20)}`)
+            throw err('unknown dot key', line_number)
         }
-        r[k.toLowerCase()] = v
+        r[k.toLowerCase()] = v.value
     }
     return r
 }

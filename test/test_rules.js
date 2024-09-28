@@ -1,5 +1,5 @@
-let storage = await import(`../${process.env.out}/ext/storage.js`)
-let rules = (await import(`../${process.env.out}/ext/rules.js`))
+import * as storage from '../src/storage.js'
+import * as rules from '../src/rules.js'
 import assert from 'assert'
 
 let area = {

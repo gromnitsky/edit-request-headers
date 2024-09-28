@@ -12,7 +12,9 @@ export class Token {
 
 function err(input, line, msg) {
     let coords = [input || '[memory]', line, 1].join`:`
-    return new Error([coords, msg].join`: `)
+    let r = new Error([coords, msg].join`: `)
+    r.coords = coords
+    return r
 }
 
 export class Lexer {
@@ -32,7 +34,7 @@ export class Lexer {
         this.file = file
     }
 
-    err(msg) { throw err(this.file, this.line, msg) }
+    err(msg) { return err(this.file, this.line, msg) }
 
     tokenise_pass1() {
         let tokens = []
@@ -40,7 +42,7 @@ export class Lexer {
 
         while (str.length > 0) {
             let token = this.token(str); if (!token) {
-                this.err(`Failed to match token on \`${str.slice(0,20)}…\``)
+                throw this.err(`Failed to match token on \`${str.slice(0,20)}…\``)
             }
             if (['comment', 'backslash-eol','newline'].includes(token.type))
                 this.line += 1
@@ -59,7 +61,7 @@ export class Lexer {
             if (t.type === 'comment') continue
 
             if (backslash_mode) {
-                if (t.type !== 'data') this.err('Invalid catenation')
+                if (t.type !== 'data') throw this.err('Invalid catenation')
                 prev_node.value = prev_node.value + ' ' + t.value
                 backslash_mode = false
                 continue
@@ -111,8 +113,7 @@ export class Lexer {
                 ]
             }
 
-            if (!t)
-                this.err(`failed to tokenise \`${token.value.slice(0,20)}…\``)
+            if (!t) throw this.err(`failed to tokenise \`${token.value.slice(0,20)}…\``)
             tokens.push(t)
         }
 
