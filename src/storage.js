@@ -57,7 +57,11 @@ function err(msg, line_number) {
 
 function domain(str = '', line_number) {
     let protocol = ''
-    if (!/^https?:/i.test(str)) {
+    let m
+    if ( (m = str.match(/^([a-zA-Z0-9]+):/i))) {
+        if (m[1] !== 'http' && m[1] !== 'https')
+            throw err('Invalid protocol', line_number)
+    } else {
         protocol = 'http://'
         str = [protocol, str].join``
     }
@@ -65,7 +69,7 @@ function domain(str = '', line_number) {
     try {
         url = new URL(str)
     } catch (_) {
-        throw err('invalid url', line_number)
+        throw err('Invalid url', line_number)
     }
     let pathname = `${url.pathname}/`.replace(/\/+/g, '/')
     return [protocol ? '||' : '|', protocol ? '' : `${url.protocol}//`,

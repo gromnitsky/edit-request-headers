@@ -22,7 +22,8 @@ suite('ini', function() {
 
     test('invalid domain', function() {
         assert.throws( () => storage.ini_parse('[]\nw=1'), /failed to tokenise/)
-        assert.throws( () => storage.ini_parse('[q q]\nw=1'), /invalid url/)
+        assert.throws( () => storage.ini_parse('[q q]\nw=1'), /Invalid url/)
+        assert.throws( () => storage.ini_parse('[ftp://q.com]\nw=1'), /Invalid protocol/)
     })
 
     test('invalid section', function() {
