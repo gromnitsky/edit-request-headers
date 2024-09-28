@@ -23,10 +23,15 @@
     display: flex;
     justify-content: space-between;
   }
-  textarea {
+  #editor {
     margin: var(--gutter) 0;
     flex: 1;
-    text-wrap: nowrap;
+    height: calc(100% - 10rem);
+
+    & > div {
+      border: 1px solid silver;
+      height: 100%;
+    }
   }
 </style>
 
@@ -35,12 +40,13 @@
   <button id="reset">Reset to defaults</button>
 </nav>
 
-<textarea spellcheck="false"></textarea>
+<div id="editor"></div>
 
 <footer>
   <div>Storage area: <code id="storage_area_info">?</code></div>
   <div>
     <a target="_blank" href="https://github.com/gromnitsky/edit-request-headers">Help</a>
   </div>
+</footer>
 
 <script type="module" src="options.js"></script>

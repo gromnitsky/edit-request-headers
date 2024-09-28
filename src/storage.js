@@ -73,12 +73,12 @@ function domain(str = '', line_number) {
 }
 
 function keypairs(url_condition, obj) {
-    let line_number = obj[ini.LINE]
     if (!Object.keys(obj).length) {
-        throw err('empty section', line_number)
+        throw err('empty section', obj[ini.LINE])
     }
     let r = {}
     for (let [k, v] of Object.entries(obj)) {
+        let line_number = v[ini.LINE]
         if ( !/^\.?[a-z_-]+$/i.test(k))
             throw err('invalid header name', line_number)
         if ('.' === k[0] && '.priority' !== k) {
