@@ -31,7 +31,7 @@ suite('ini', function() {
         try {
             storage.ini_parse('\n[q]\n')
         } catch (e) {
-            assert.equal(e.coords, 2)
+            assert.equal(e.line_number, 2)
         }
     })
 

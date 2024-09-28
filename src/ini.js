@@ -10,10 +10,10 @@ export class Token {
     }
 }
 
-function err(input, line, msg) {
-    let coords = [input || '[memory]', line, 1].join`:`
-    let r = new Error([coords, msg].join`: `)
-    r.coords = coords
+function err(msg, file, line_number) {
+    let r = new Error(msg)
+    r.line_number = line_number
+    r.file = file
     return r
 }
 
@@ -34,7 +34,7 @@ export class Lexer {
         this.file = file
     }
 
-    err(msg) { return err(this.file, this.line, msg) }
+    err(msg) { return err(msg, this.file, this.line) }
 
     tokenise_pass1() {
         let tokens = []
@@ -171,7 +171,7 @@ export function parse_tokens(tokens, opt) {
     let section
     tokens.forEach( (token, idx) => {
         if (0 === idx && Array.isArray(token)) {
-            throw err(null, token[0].line, 'No section')
+            throw err('No section', null, token[0].line,)
         }
 
         if (Array.isArray(token)) {

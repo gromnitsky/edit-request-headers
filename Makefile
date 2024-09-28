@@ -9,7 +9,7 @@ export out := _out/$(shell git rev-parse --abbrev-ref HEAD)/$(browser)
 
 all:
 
-dest := $(out)/ext/icon.128.png $(out)/ext/vendor/inireader.js
+dest := $(out)/ext/icon.128.png
 dest-exclude := %/icon.svg
 npm.src := node_modules/plain-dialogs/index.mjs
 include extensions.mk
@@ -17,10 +17,6 @@ include extensions.mk
 $(out)/ext/icon.128.png: src/icon.svg
 	@mkdir -p $(dir $@)
 	inkscape $< -o $@ -w 128 -h 128
-
-$(out)/ext/vendor/inireader.js: node_modules/inireader/index.js
-	@mkdir -p $(dir $@)
-	./esbuild.js $< > $@
 
 all: $(dest)
 

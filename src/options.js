@@ -43,8 +43,11 @@ class App {
                 return rules.update(r)
             }).then( () => {
                 this.node_save.disabled = true
+            }).catch( e => {
+                let msg = e.message
+                if (e.line_number) msg = `Line ${e.line_number}: ${msg}`
+                return plainDialogs.alert(msg)
             })
-            .catch(plainDialogs.alert)
     }
 
     reset() {

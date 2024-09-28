@@ -49,9 +49,9 @@ export function ini_parse(str) {
     return r
 }
 
-function err(msg, coords) {
+function err(msg, line_number) {
     let r = new Error(msg)
-    r.coords = coords
+    r.line_number = line_number
     return r
 }
 
