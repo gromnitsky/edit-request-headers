@@ -78,15 +78,15 @@ function domain(str = '', line_number) {
 
 function keypairs(url_condition, obj) {
     if (!Object.keys(obj).length) {
-        throw err('empty section', obj[ini.LINE])
+        throw err('Empty section', obj[ini.LINE])
     }
     let r = {}
     for (let [k, v] of Object.entries(obj)) {
         let line_number = v[ini.LINE]
         if ( !/^\.?[a-z_-]+$/i.test(k))
-            throw err('invalid header name', line_number)
+            throw err('Invalid header name', line_number)
         if ('.' === k[0] && '.priority' !== k) {
-            throw err('unknown dot key', line_number)
+            throw err('Unknown dot key', line_number)
         }
         r[k.toLowerCase()] = v.value
     }

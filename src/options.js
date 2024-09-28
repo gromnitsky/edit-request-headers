@@ -16,14 +16,10 @@ class App {
         this.node_reset  = document.querySelector('#reset')
         this.node_debug  = document.querySelector('#storage_area_info')
 
-        this.save_disable = debounce( (hint) => {
-            this.node_save.disabled = hint
-        }, 500)
-
         this.editor_view = new editor.EditorView({
             extensions: [editor.basicSetup,
                          editor.lintGutter(),
-                         this.editor_update_listener(),
+                         this.my_update_listener(),
                          this.my_linter()],
             parent: document.querySelector('#editor')
         })
@@ -38,13 +34,11 @@ class App {
         this.node_debug.onclick = this.ini_parse_debug.bind(this)
     }
 
-    editor_update_listener() {
-        return editor.EditorView.updateListener.of( v => {
-            if (v.docChanged) {
-                let hint = v.transactions[0].annotations.find( v => v.value === "load")
-                this.save_disable(hint)
-            }
-        })
+    my_update_listener() {
+        let cb = debounce( v => {
+            if (v.docChanged) this.node_save.disabled = false
+        }, 500)
+        return editor.EditorView.updateListener.of(cb)
     }
 
     my_linter() {
@@ -83,7 +77,6 @@ class App {
             })
             this.editor_view.dispatch({
                 changes: {from: 0, insert: str},
-                annotations: {value: 'load'}
             })
         })
     }
