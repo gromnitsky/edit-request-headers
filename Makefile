@@ -18,10 +18,6 @@ $(out)/ext/icon.128.png: src/icon.svg
 	@mkdir -p $(dir $@)
 	inkscape $< -o $@ -w 128 -h 128
 
-$(out)/ext/editor.js: src/editor.js
-	@mkdir -p $(dir $@)
-	./esbuild.js $< > $@
-
 all: $(dest)
 
 .PHONY: test

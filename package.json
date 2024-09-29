@@ -5,6 +5,7 @@
         "@esbuild-plugins/node-modules-polyfill": "^0.2.2",
         "codemirror": "^6.0.1",
         "esbuild": "^0.23.1",
+        "lodash-es": "^4.17.21",
         "mocha": "^10.7.3",
         "plain-dialogs": "^0.1.1"
     }

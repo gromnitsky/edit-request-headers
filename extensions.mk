@@ -1,5 +1,8 @@
-src := $(shell find src -type f | grep -v '\.jsonnet')
-dest := $(dest) $(patsubst src/%, $(out)/ext/%, $(src)) $(out)/ext/manifest.json
+src := $(shell find src -type f | grep -v '\.jsonnet' | grep -v vendor)
+src.vendor := $(shell find src -type f | grep vendor)
+dest := $(dest) $(patsubst src/%, $(out)/ext/%, $(src)) \
+	$(patsubst src/vendor/%, $(out)/ext/vendor/%, $(src.vendor)) \
+	$(out)/ext/manifest.json
 jsonnet := jsonnet --tla-code 'browser="$(browser)"' --tla-code debug=$(debug)
 pkg := $(out)/$(shell $(jsonnet) src/manifest.jsonnet | jq -r '.name+"-"+.version' | tr ' ' _)
 
@@ -10,6 +13,10 @@ $(out)/ext/%: src/%
 $(out)/ext/%.json: src/%.jsonnet
 	@mkdir -p $(dir $@)
 	$(jsonnet) $< -o $@
+
+$(out)/ext/vendor/%.js: src/vendor/%.js
+	@mkdir -p $(dir $@)
+	./esbuild.js $< > $@
 
 _out/private.pem:
 	@mkdir -p $(dir $@)

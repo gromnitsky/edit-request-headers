@@ -1,7 +1,8 @@
 import * as browser_storage from './storage.js'
 import * as rules from './rules.js'
 import * as plainDialogs from './node_modules/plain-dialogs/index.mjs'
-import * as editor from './editor.js'
+import * as editor from './vendor/editor.js'
+import debounce from './vendor/debounce.js'
 
 async function main() {
     let s = new browser_storage.Storage(await browser_storage.area())
@@ -37,7 +38,7 @@ class App {
     my_update_listener() {
         let cb = debounce( v => {
             if (v.docChanged) this.node_save.disabled = false
-        }, 500)
+        }, 500, {leading: true, trailing: false})
         return editor.EditorView.updateListener.of(cb)
     }
 
@@ -105,14 +106,6 @@ class App {
             }).then( () => {
                 this.save()
             })
-    }
-}
-
-function debounce(fn, ms = 0) {
-    let id
-    return function(...args) {
-        clearTimeout(id)
-        id = setTimeout(() => fn.apply(this, args), ms)
     }
 }
 
