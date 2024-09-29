@@ -17,13 +17,13 @@ class App {
         this.node_debug  = document.querySelector('#storage_area_info')
 
         this.editor_view = new editor.EditorView({
-            extensions: [editor.basicSetup,
+            extensions: [editor.my_setup,
                          editor.lintGutter(),
                          this.my_update_listener(),
                          this.my_linter()],
             parent: document.querySelector('#editor')
         })
-        this.load()
+        this.load(true)
 
         browser_storage.area_name().then( v => {
             document.querySelector('#storage_area_info').innerText = v
@@ -67,16 +67,15 @@ class App {
         console.log(browser_storage.ini_parse(this.doc().toString()))
     }
 
-    load() {
+    load(first_time) {
         return this.storage.get('ini').then( str => {
             this.editor_view.dispatch({ // delete
-                changes: {
-                    from: 0, to: this.doc().length,
-                    insert: ''
-                }
+                changes: { from: 0, to: this.doc().length, insert: '' },
+                annotations: editor.Transaction.addToHistory.of(!first_time)
             })
             this.editor_view.dispatch({
                 changes: {from: 0, insert: str},
+                annotations: editor.Transaction.addToHistory.of(!first_time)
             })
         })
     }
