@@ -141,15 +141,15 @@ foo = bar\\
 
 
     test('bad', function() {
-        tokchk_fail(`[`, /failed to tokenise/)
-        tokchk_fail(`[a`, /failed to tokenise/)
-        tokchk_fail(`[a[]`, /failed to tokenise/)
-        tokchk_fail(`[a\\[]`, /failed to tokenise/)
-        tokchk_fail(`a`, /failed to tokenise/)
-        tokchk_fail(`a\\`, /failed to tokenise/)
-        tokchk_fail(`=`, /failed to tokenise/)
-        tokchk_fail(`!=2`, /failed to tokenise/)
-        tokchk_fail(`=2`, /failed to tokenise/)
+        tokchk_fail(`[`, /Failed to tokenise/)
+        tokchk_fail(`[a`, /Failed to tokenise/)
+        tokchk_fail(`[a[]`, /Failed to tokenise/)
+        tokchk_fail(`[a\\[]`, /Failed to tokenise/)
+        tokchk_fail(`a`, /Failed to tokenise/)
+        tokchk_fail(`a\\`, /Failed to tokenise/)
+        tokchk_fail(`=`, /Failed to tokenise/)
+        tokchk_fail(`!=2`, /Failed to tokenise/)
+        tokchk_fail(`=2`, /Failed to tokenise/)
 
         tokchk_fail(`[a]
 foo = 1\\

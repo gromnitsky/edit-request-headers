@@ -113,7 +113,7 @@ export class Lexer {
                 ]
             }
 
-            if (!t) throw this.err(`failed to tokenise \`${token.value.slice(0,20)}…\``)
+            if (!t) throw this.err(`Failed to tokenise \`${token.value.slice(0,20)}…\``)
             tokens.push(t)
         }
 
