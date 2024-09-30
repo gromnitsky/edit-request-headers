@@ -36,6 +36,7 @@ crx: $(pkg).crx
 $(pkg).crx: _out/private.pem $(dest)
 	google-chrome --pack-extension=$(out)/ext --pack-extension-key=$<
 	mv $(out)/ext.crx $(pkg).crx
+	chmod 0644 $(pkg).crx
 
 upload: $(pkg).crx
-	scp $< gromnitsky@web.sourceforge.net:/home/user-web/gromnitsky/htdocs/js/chrome/
+	rsync -tP $< gromnitsky@web.sourceforge.net:/home/user-web/gromnitsky/htdocs/js/chrome/
