@@ -2,6 +2,8 @@ A browser extension (manifest v3) to add, modify, or remove HTTP
 request headers (such as Referer or Cookie) using the
 declarativeNetRequest API.
 
+* [Chrome Web Store][]
+* [Firefox Addons][]
 * [.crx file][]
 
 Upon installation, you'll see an options page resembling an INI-file
@@ -45,3 +47,5 @@ MIT
 
 [.crx file]: https://gromnitsky.users.sourceforge.net/js/chrome/
 [test page]: https://gromnitsky.users.sourceforge.net/js/chrome/edit-request-headers-test/
+[Chrome Web Store]: https://chromewebstore.google.com/detail/edit-request-headers/keopaklpgapphnmffbgaaklcaelcpeei
+[Firefox Addons]: https://addons.mozilla.org/en-US/firefox/addon/edit-request-headers/
