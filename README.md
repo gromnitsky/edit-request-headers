@@ -38,14 +38,12 @@ $ make crx
 $ find -name \*crx
 ~~~
 
-Drag-and-drop a generated .crx into `chrome://extensions/`, then visit
-a [test page][]
+Drag-and-drop a generated .crx into `chrome://extensions/`.
 
 ## License
 
 MIT
 
-[.crx file]: https://gromnitsky.users.sourceforge.net/js/chrome/
-[test page]: https://gromnitsky.users.sourceforge.net/js/chrome/edit-request-headers-test/
+[.crx file]: https://sigwait.org/~alex/demo/chrome/
 [Chrome Web Store]: https://chromewebstore.google.com/detail/edit-request-headers/keopaklpgapphnmffbgaaklcaelcpeei
 [Firefox Addons]: https://addons.mozilla.org/en-US/firefox/addon/edit-request-headers/

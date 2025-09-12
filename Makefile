@@ -22,6 +22,3 @@ all: $(dest)
 
 .PHONY: test
 test: $(dest); node_modules/.bin/mocha -u tdd test/test_* $(o)
-
-upload-test:
-	rsync -avPL --delete -e ssh test/page/ gromnitsky@web.sourceforge.net:/home/user-web/gromnitsky/htdocs/js/chrome/edit-request-headers-test/

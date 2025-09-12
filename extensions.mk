@@ -39,4 +39,4 @@ $(pkg).crx: _out/private.pem $(dest)
 	chmod 0644 $(pkg).crx
 
 upload: $(pkg).crx
-	rsync -tP $< gromnitsky@web.sourceforge.net:/home/user-web/gromnitsky/htdocs/js/chrome/
+	rsync $< alex@sigwait.org:/home/alex/public_html/demo/chrome/ $(o)
