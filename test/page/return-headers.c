@@ -14,7 +14,7 @@ struct Header {
 };
 
 struct Header* header_init() {
-  struct Header *hdr = malloc(sizeof(hdr)); assert(hdr);
+  struct Header *hdr = malloc(sizeof(struct Header)); assert(hdr);
   hdr->name = NULL;
   hdr->value = NULL;
   hdr->next = NULL;
@@ -42,10 +42,11 @@ int debug() {
 
 #define HEADER_LINE_MAX 16*1024
 #define HEADERS_SIZE 32*1024
+#define HEADERS_LIMIT 100
 
 struct Header* headers() {
   char header[HEADER_LINE_MAX+1];
-  int header_len, lines = 0, total_headers_size = 0;
+  int header_len, lines = 0, total_headers_size = 0, total_headers = 0;
   struct Header *hdr, *last = NULL;
 
   while (fgets(header, HEADER_LINE_MAX+1, stdin)) {
@@ -56,15 +57,20 @@ struct Header* headers() {
     if (lines == 1) continue;   /* skip HTTP method line */
     if (header_len == 2) break; /* end of headers */
 
+    if (total_headers++ > HEADERS_LIMIT) return NULL;
     total_headers_size += header_len;
     if (total_headers_size > HEADERS_SIZE) return NULL;
 
     header[header_len-2] = '\0';
     hdr = header_init();
 
-    char *colon = strchr(header, ':'); if (NULL == colon) return NULL;
+    char *colon = strchr(header, ':');
+    if (NULL == colon || (colon - header) == 0) return NULL;
     hdr->name = substring(header, colon);
-    if (header_len - (colon - header) > 4) hdr->value = strdup(colon + 2);
+    if (header_len - (colon - header) > 4) {
+      hdr->value = strdup(colon + 2);
+      assert(hdr->value);
+    }
 
     hdr->next = last;
     last = hdr;
