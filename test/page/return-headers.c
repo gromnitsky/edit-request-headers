@@ -67,8 +67,11 @@ struct Header* headers() {
     char *colon = strchr(header, ':');
     if (NULL == colon || (colon - header) == 0) return NULL;
     hdr->name = substring(header, colon);
-    if (header_len - (colon - header) > 4) {
-      hdr->value = strdup(colon + 2);
+
+    char *value_start = colon + 1;
+    while (*value_start == ' ' || *value_start == '\t') value_start++;
+    if (*value_start) {
+      hdr->value = strdup(value_start);
       assert(hdr->value);
     }
 

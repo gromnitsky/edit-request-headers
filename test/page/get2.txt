@@ -3,7 +3,8 @@ Host: www.example.com
 Lol: "foo" bar
 Empty1: 
 Empty2:
-Singe: 1
+Singe1: a
+Singe2:b
 Accept-Encoding: gzip, deflate, br
 
 lol
