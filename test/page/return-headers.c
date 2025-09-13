@@ -4,6 +4,8 @@
 #include <string.h>
 #include <assert.h>
 
+#include <jansson.h>
+
 struct Header {
   char* name;
   char* value;
@@ -30,6 +32,11 @@ char* substring(char* src, char *c) {
   memcpy(dest, src, len);
   dest[len] = '\0';
   return dest;
+}
+
+int debug() {
+  char *v = getenv("DEBUG");
+  return strncmp(v ? v : "", "1", 1) == 0;
 }
 
 #define HEADER_LINE_MAX 16*1024
@@ -65,13 +72,6 @@ struct Header* headers() {
   return last;
 }
 
-void headers_print(struct Header *hdr) {
-  if (!hdr) return;
-  for (struct Header *p = hdr; p; p = p->next) {
-    printf("name: `%s`, value: `%s`\n", p->name, p->value);
-  }
-}
-
 void headers_free(struct Header **hdr) {
   if (NULL == hdr || NULL == *hdr) return;
 
@@ -85,13 +85,43 @@ void headers_free(struct Header **hdr) {
   *hdr = NULL;
 }
 
-int main() {
-  struct Header *hdr = headers();
-  if (!hdr) {
-    printf("400\n");
-    return 1;
+char* headers_json(struct Header *hdr) {
+  if (!hdr) return NULL;
+  json_t *obj = json_object(); assert(obj);
+
+  for (struct Header *p = hdr; p; p = p->next) {
+    if (p->name)
+      json_object_set_new(obj, p->name, json_string(p->value ? p->value : ""));
   }
 
-  headers_print(hdr);
+  char *json_str = json_dumps(obj, JSON_ENCODE_ANY); assert(json_str);
+  json_decref(obj);
+  return json_str;
+}
+
+void print_http_response(struct Header *hdr) {
+  printf("HTTP/1.1 %s\r\n", hdr ? "200 OK" : "400 Bad Request");
+  printf("Date: Sat, 13 Sep 2025 20:11:00 GMT\r\n"); /* FIXME */
+
+  if (!hdr) return;
+  char *json = headers_json(hdr);
+  printf("Content-Length: %ld\r\n", strlen(json));
+  printf("Content-Type: application/json\r\n");
+  printf("\r\n");
+  printf("%s", json);
+  free(json);
+}
+
+void headers_print(struct Header *hdr) { /* DEBUG only */
+  if (!hdr) return;
+  for (struct Header *p = hdr; p; p = p->next) {
+    fprintf(stderr, "name: `%s`, value: `%s`\n", p->name, p->value);
+  }
+}
+
+int main() {
+  struct Header *hdr = headers();
+  if (debug()) headers_print(hdr);
+  print_http_response(hdr);
   headers_free(&hdr);           /* satisfy valgrind */
 }
