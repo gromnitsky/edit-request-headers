@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <time.h>
 
 #include <jansson.h>
 
@@ -99,9 +100,19 @@ char* headers_json(struct Header *hdr) {
   return json_str;
 }
 
+char* date() {
+  static char date[30];
+  time_t now = time(NULL);
+  struct tm *gmt = gmtime(&now);
+  strftime(date, sizeof(date), "%a, %d %b %Y %H:%M:%S GMT", gmt);
+  return date;
+}
+
 void print_http_response(struct Header *hdr) {
   printf("HTTP/1.1 %s\r\n", hdr ? "200 OK" : "400 Bad Request");
-  printf("Date: Sat, 13 Sep 2025 20:11:00 GMT\r\n"); /* FIXME */
+  printf("Date: %s\r\n", date());
+  printf("Connection: close\r\n");
+  if (debug()) printf("Access-Control-Allow-Origin: *\r\n");
 
   if (!hdr) return;
   char *json = headers_json(hdr);
@@ -112,16 +123,8 @@ void print_http_response(struct Header *hdr) {
   free(json);
 }
 
-void headers_print(struct Header *hdr) { /* DEBUG only */
-  if (!hdr) return;
-  for (struct Header *p = hdr; p; p = p->next) {
-    fprintf(stderr, "name: `%s`, value: `%s`\n", p->name, p->value);
-  }
-}
-
 int main() {
   struct Header *hdr = headers();
-  if (debug()) headers_print(hdr);
   print_http_response(hdr);
   headers_free(&hdr);           /* satisfy valgrind */
 }
