@@ -104,7 +104,7 @@ char* headers_json(struct Header *hdr) {
       json_object_set_new(obj, p->name, json_string(p->value ? p->value : ""));
   }
 
-  char *json_str = json_dumps(obj, JSON_ENCODE_ANY); assert(json_str);
+  char *json_str = json_dumps(obj, JSON_COMPACT); assert(json_str);
   json_decref(obj);
   return json_str;
 }
