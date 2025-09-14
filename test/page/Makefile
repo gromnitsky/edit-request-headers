@@ -25,3 +25,7 @@ vendor/jansson/_out/lib/libjansson.a:
 
 tcplol:
 	tcplol -v -p 1234 ./http-echo-headers
+
+upload: http-echo-headers index.html http-echo-headers.socket http-echo-headers@.service
+	rsync -Pa --delete http-echo-headers index.html alex@sigwait.org:/home/alex/apps/http-echo-headers/ $(o)
+	rsync -Pa --delete http-echo-headers.socket http-echo-headers@.service alex@sigwait.org:/home/alex/.config/systemd/user/ $(o)

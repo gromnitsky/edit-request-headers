@@ -1,0 +1,9 @@
+[Unit]
+Description=http-echo-headers socket
+
+[Socket]
+ListenStream=3008
+Accept=yes
+
+[Install]
+WantedBy=sockets.target

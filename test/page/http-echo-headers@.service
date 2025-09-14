@@ -1,0 +1,6 @@
+[Unit]
+Description=http-echo-headers
+
+[Service]
+ExecStart=-/home/alex/apps/http-echo-headers/http-echo-headers
+StandardInput=socket
