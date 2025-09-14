@@ -1,4 +1,4 @@
-#define _POSIX_C_SOURCE 200809L
+#define _XOPEN_SOURCE 700
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,7 +10,7 @@
 #include <limits.h>
 #include <libgen.h>
 
-#include "jansson.h"
+#include <jansson.h>
 
 struct Header {
   char* name;
@@ -42,7 +42,7 @@ char* substring(char* src, char *c) {
 
 int debug() {
   char *v = getenv("DEBUG");
-  return strncmp(v ? v : "", "1", 1) == 0;
+  return v && strcmp(v, "1") == 0;
 }
 
 #define HEADER_LINE_MAX 16*1024
@@ -145,27 +145,28 @@ void print_http_file(char *name) {
   printf("HTTP/1.1 %s\r\n", r == -1 ? "500 Internal Server Error" : "200 OK");
   printf("Date: %s\r\n", date());
   printf("Connection: close\r\n");
-  printf("Content-Length: %ld\r\n", sb.st_size);
-  printf("Content-Type: text/html\r\n");
   if (debug()) printf("Access-Control-Allow-Origin: *\r\n");
-  printf("\r\n");
 
   if (r == -1) return;
+  printf("Content-Length: %ld\r\n", sb.st_size);
+  printf("Content-Type: text/html\r\n");
+  printf("\r\n");
+  fflush(stdout);
+
   char buf[BUFSIZ];
   int n;
-  while ( (n = read(fd, buf, BUFSIZ)) > 0) {
-    printf("%s", buf);
-  }
+  while ( (n = read(fd, buf, BUFSIZ)) > 0) write(1, buf, n);
   close(fd);
 }
 
 char* near_exe(char *name) {
   static char path[PATH_MAX];
-  char exe[PATH_MAX];
+  char exe[PATH_MAX], exe_real[PATH_MAX];
   int exe_len = readlink("/proc/self/exe", exe, PATH_MAX);
   assert(-1 != exe_len);
   exe[exe_len] = '\0';
-  snprintf(path, PATH_MAX, "%s/%s", dirname(exe), name);
+  assert(realpath(exe, exe_real));
+  snprintf(path, PATH_MAX, "%s/%s", dirname(exe_real), name);
   return path;
 }
 
