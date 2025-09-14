@@ -8,8 +8,12 @@
   table, th, td { border: 1px solid lightgray; padding: 5px; }
   th:first-child { width: 35%; }
   td { overflow-wrap: anywhere; }
-  body { max-width: 650px; margin: 8px auto; padding: 0 8px; }
-  pre { overflow-x: auto; }
+  body {
+    max-width: 650px; margin: 8px auto; padding: 0 8px;
+    font-family: sans-serif;
+  }
+  pre { overflow-x: auto; font-size: 120%; }
+  #referer { background: lightblue; }
 </style>
 
 <p>
@@ -21,7 +25,7 @@
 </p>
 
 <pre>
-[https://gromnitsky.users.sourceforge.net/js/chrome/edit-request-headers-test/]
+[https://apps.sigwait.org/edit-request-headers/echo]
 referer = 12345
 </pre>
 
@@ -29,4 +33,54 @@ referer = 12345
 
 <div id="headers"></div>
 
-<script src="examine-headers.js"></script>
+<script>
+  window.addEventListener('DOMContentLoaded', main)
+
+  function main() {
+      let b = document.querySelector('button')
+      b.onclick = button
+      b.click()
+  }
+
+  function button(evt) {
+      evt.target.disabled = true
+      render('')
+      headers().then(render).catch(render)
+          .finally( () => evt.target.disabled = false)
+  }
+
+  async function headers() {
+      return efetch(`echo?t=${Date.now()}`).then(v => v.json())
+  }
+
+  function render(json) {
+      let out = document.querySelector('#headers')
+      if (json instanceof Error || !json) { out.innerText = json; return }
+
+      let rows = Object.entries(json)
+          .sort((a, b) => a[0].localeCompare(b[0]))
+          .map( v => {
+              let id = v[0].toLowerCase() == "referer" ? " id='referer'" : ""
+              return `<tr><td${id}>${e(v[0])}</td><td>${e(v[1])}</td></tr>`
+          })
+      out.innerHTML = ['<table><thead><tr><th>Name</th><th>Value</th></tr></thead><tbody>', ...rows, '</tbody></table>'].join`\n`
+  }
+
+  function efetch(url, opt) {
+      let fetcherr = r => {
+          if (!r.ok) throw new Error(r.statusText)
+          return r
+      }
+      return fetch(url, opt).then(fetcherr)
+  }
+
+  function e(s) {
+      return s ? s.toString().replace(/[<>&'"]/g, ch => ({
+          '<': '&lt;',
+          '>': '&gt;',
+          '&': '&amp;',
+          '\'': '&apos;',
+          '"': '&quot;'
+      }[ch])) : ''
+  }
+</script>

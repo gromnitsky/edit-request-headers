@@ -4,8 +4,13 @@
 #include <string.h>
 #include <assert.h>
 #include <time.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <limits.h>
+#include <libgen.h>
 
-#include <jansson.h>
+#include "jansson.h"
 
 struct Header {
   char* name;
@@ -46,18 +51,16 @@ int debug() {
 
 struct Header* headers() {
   char header[HEADER_LINE_MAX+1];
-  int header_len, lines = 0, total_headers_size = 0, total_headers = 0;
+  int header_len, total_headers_size = 0, line = 0;
   struct Header *hdr, *last = NULL;
 
   while (fgets(header, HEADER_LINE_MAX+1, stdin)) {
     header_len = strlen(header);
     if (!header_line_valid(header, header_len)) return NULL;
 
-    ++lines;
-    if (lines == 1) continue;   /* skip HTTP method line */
     if (header_len == 2) break; /* end of headers */
 
-    if (total_headers++ > HEADERS_LIMIT) return NULL;
+    if (line++ > HEADERS_LIMIT) return NULL;
     total_headers_size += header_len;
     if (total_headers_size > HEADERS_SIZE) return NULL;
 
@@ -132,8 +135,53 @@ void print_http_response(struct Header *hdr) {
   free(json);
 }
 
+void print_http_file(char *name) {
+  if (!name) return;
+
+  int fd = open(name, O_RDONLY);
+  struct stat sb;
+  int r = fstat(fd, &sb);
+
+  printf("HTTP/1.1 %s\r\n", r == -1 ? "500 Internal Server Error" : "200 OK");
+  printf("Date: %s\r\n", date());
+  printf("Connection: close\r\n");
+  printf("Content-Length: %ld\r\n", sb.st_size);
+  printf("Content-Type: text/html\r\n");
+  if (debug()) printf("Access-Control-Allow-Origin: *\r\n");
+  printf("\r\n");
+
+  if (r == -1) return;
+  char buf[BUFSIZ];
+  int n;
+  while ( (n = read(fd, buf, BUFSIZ)) > 0) {
+    printf("%s", buf);
+  }
+  close(fd);
+}
+
+char* near_exe(char *name) {
+  static char path[PATH_MAX];
+  char exe[PATH_MAX];
+  int exe_len = readlink("/proc/self/exe", exe, PATH_MAX);
+  assert(-1 != exe_len);
+  exe[exe_len] = '\0';
+  snprintf(path, PATH_MAX, "%s/%s", dirname(exe), name);
+  return path;
+}
+
 int main() {
-  struct Header *hdr = headers();
-  print_http_response(hdr);
-  headers_free(&hdr);           /* satisfy valgrind */
+  char line[HEADER_LINE_MAX+1];
+  if (!fgets(line, HEADER_LINE_MAX+1, stdin)) { // request method line
+    print_http_response(NULL);
+    return 0;
+  }
+
+  if (0 == strncmp("GET /echo", line, 9)) {
+    struct Header *hdr = headers();
+    print_http_response(hdr);
+    headers_free(&hdr);           /* satisfy valgrind */
+
+  } else {
+    print_http_file(near_exe("index.html"));
+  }
 }

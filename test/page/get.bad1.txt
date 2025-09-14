@@ -1,2 +1,2 @@
-GET / HTTP/1.0
+GET /echo HTTP/1.0
 
