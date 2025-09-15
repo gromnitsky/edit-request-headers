@@ -1,31 +1,32 @@
-# dnf install jansson-devel
-
+# 'release' build is static
 http-echo-headers:
 
-ifndef debug
-LDFLAGS_DEBUG := -static
-endif
-CFLAGS := -g -Ivendor/jansson/_out/include \
+src := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
+usr := $(src)/_out/usr
+vendor := _out/vendor
+
+LDFLAGS_DEBUG := $(if $(debug),,-static)
+CFLAGS := -g -I$(usr)/include \
 	 -Wall -Werror -std=c23 -fstack-protector-strong -fPIE -pie
-LDFLAGS := $(LDFLAGS_DEBUG) -Lvendor/jansson/_out/lib -ljansson \
+LDFLAGS := $(LDFLAGS_DEBUG) -L$(usr)/lib -ljansson \
 	-z noexecstack -z relro -z now
 
-%: %.c vendor/jansson/_out/lib/libjansson.a
+%: %.c $(usr)/lib/libjansson.a
 	$(CC) $(CFLAGS) $< $(LDFLAGS) -o $@
 
-vendor/jansson/_out/lib/libjansson.a:
-	mkdir -p vendor
-	cd vendor && git clone --depth=1 https://github.com/akheron/jansson
-	cd vendor/jansson && autoreconf -i
-	cd vendor/jansson && ./configure --prefix=`pwd`/_out
-	cd vendor/jansson && make install
+$(usr)/lib/libjansson.a:
+	rm -rf $(vendor)/jansson; mkdir -p $(vendor)
+	git clone --depth=1 https://github.com/akheron/jansson $(vendor)/jansson
+	cd $(vendor)/jansson && autoreconf -i -W none
+	cd $(vendor)/jansson && ./configure -q --enable-silent-rules --prefix=$(usr)
+	cd $(vendor)/jansson && make --no-print-directory install
 
-%.valgrind: %
-	valgrind --leak-check=full ./$* < get2.txt
+%.valgrind: %; valgrind --leak-check=full ./$* < get2.txt
+tcplol: http-echo-headers; tcplol -v -p 1234 ./$<
 
-tcplol:
-	tcplol -v -p 1234 ./http-echo-headers
+upload: rsync-program rsync-systemd
 
-upload: http-echo-headers index.html http-echo-headers.socket http-echo-headers@.service
-	rsync -Pa --delete http-echo-headers index.html alex@sigwait.org:/home/alex/apps/http-echo-headers/ $(o)
-	rsync -Pa --delete http-echo-headers.socket http-echo-headers@.service alex@sigwait.org:/home/alex/.config/systemd/user/ $(o)
+rsync-program: http-echo-headers index.html
+	rsync -Pa --delete $^ alex@sigwait.org:/home/alex/apps/http-echo-headers/ $(o)
+rsync-systemd: http-echo-headers.socket http-echo-headers@.service
+	rsync -Pa --delete $^ alex@sigwait.org:/home/alex/.config/systemd/user/ $(o)
